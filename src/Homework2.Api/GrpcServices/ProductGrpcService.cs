@@ -4,6 +4,7 @@ using Homework2.Api.Mappers;
 using Homework2.Application.UseCases.Products.CreateProducts;
 using Homework2.Application.UseCases.Products.GetProductById;
 using Homework2.Application.UseCases.Products.GetProducts;
+using Homework2.Application.UseCases.Products.UpdateProduct;
 using Homework2.Domain.Common;
 using Homework2.Domain.Product;
 using Homework2.Presentation.Protos;
@@ -13,7 +14,8 @@ namespace Homework2.Api.GrpcServices;
 public class ProductGrpcService(
     ICreateProductUseCase createProductUseCase,
     IGetProductByIdUseCase getProductByIdUseCase,
-    IGetProductsUseCase getProductsUseCase) : ProductProtoService.ProductProtoServiceBase
+    IGetProductsUseCase getProductsUseCase,
+    IUpdateProductUseCase updateProductUseCase) : ProductProtoService.ProductProtoServiceBase
 {
     public override async Task<CreateProductResponse> CreateProduct(
         CreateProductRequest request,
@@ -127,6 +129,44 @@ public class ProductGrpcService(
         }
 
         return response;
+    }
+
+    public override async Task<Empty> UpdateProduct(
+        UpdateProductRequest request,
+        ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.Id, out Guid productGuid))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid ProductId format (expected GUID)."));
+        }
+
+        if (!Guid.TryParse(request.StorageId, out Guid storageGuid))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid StorageId format (expected GUID)."));
+        }
+
+        var typeResult = request.Type.ToDomain();
+        if (typeResult.IsFailure)
+        {
+            throw MapErrorToRpcException(typeResult.Error);
+        }
+
+        var updateDto = new UpdateProductDto(
+            ProductId: productGuid,
+            Title: request.Title,
+            Price: (decimal)request.Price,
+            Weight: request.Weight,
+            Type: typeResult.Value,
+            StorageId: storageGuid);
+
+        var result = await updateProductUseCase.ExecuteAsync(updateDto, context.CancellationToken);
+
+        if (result.IsFailure)
+        {
+            throw MapErrorToRpcException(result.Error);
+        }
+
+        return new Empty();
     }
 
     private static ProductResponse MapToProductResponse(ProductDto dto) =>

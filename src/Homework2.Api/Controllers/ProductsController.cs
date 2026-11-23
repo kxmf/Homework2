@@ -2,6 +2,7 @@ using Homework2.Api.Extensions;
 using Homework2.Application.UseCases.Products.CreateProducts;
 using Homework2.Application.UseCases.Products.GetProductById;
 using Homework2.Application.UseCases.Products.GetProducts;
+using Homework2.Application.UseCases.Products.UpdateProduct;
 using Homework2.Domain.Product;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,8 @@ namespace Homework2.Api.Controllers;
 public class ProductsController(
     ICreateProductUseCase createProductUseCase,
     IGetProductByIdUseCase getProductByIdUseCase,
-    IGetProductsUseCase getProductsUseCase) : ControllerBase
+    IGetProductsUseCase getProductsUseCase,
+    IUpdateProductUseCase updateProductUseCase) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(typeof(ProductIdDto), StatusCodes.Status201Created)]
@@ -57,6 +59,28 @@ public class ProductsController(
     {
         var query = new GetProductsDto(createdAt, type, storageId, pageNumber, pageSize);
         var result = await getProductsUseCase.ExecuteAsync(query, cancellationToken);
+
+        return result.ToActionResult(this);
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateProduct(
+        [FromRoute] Guid id,
+        [FromBody] UpdateProductApiRequest request,
+        CancellationToken cancellationToken)
+    {
+        var dto = new UpdateProductDto(
+            id,
+            request.Title,
+            request.Price,
+            request.Weight,
+            request.Type,
+            request.StorageId);
+
+        var result = await updateProductUseCase.ExecuteAsync(dto, cancellationToken);
 
         return result.ToActionResult(this);
     }

@@ -6,12 +6,17 @@ namespace Homework2.Application.UseCases.Products.CreateProducts;
 public class CreateProductUseCase(IProductRepository productRepository) : ICreateProductUseCase
 {
     public async Task<Result<ProductIdDto>> ExecuteAsync(
-        CreateProductDto createProductDto, 
+        CreateProductDto createProductDto,
         CancellationToken cancellationToken = default)
     {
         var priceResult = ProductPrice.Create(createProductDto.Price);
         if (priceResult.IsFailure)
             return priceResult.Error;
+
+        if (!Enum.IsDefined(createProductDto.Type))
+        {
+            return Error.Validation("Product.Type", "Invalid product type specified.");
+        }
 
         var weightResult = ProductWeight.FromGrams(createProductDto.Weight);
         if (weightResult.IsFailure)

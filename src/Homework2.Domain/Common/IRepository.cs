@@ -8,7 +8,7 @@ public interface IRepository<TAggregate, in TId>
 
     Task AddAsync(TAggregate aggregate, CancellationToken cancellationToken = default);
 
-    void Update(TAggregate aggregate);
+    Task UpdateAsync(TAggregate aggregate, CancellationToken cancellationToken = default);
 
-    void Remove(TAggregate aggregate);
+    Task RemoveAsync(TAggregate aggregate, CancellationToken cancellationToken = default);
 }

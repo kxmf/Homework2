@@ -20,4 +20,20 @@ public static class ResultExtensions
             _ => controller.StatusCode(StatusCodes.Status500InternalServerError, new { error = result.Error.Message, code = result.Error.Code })
         };
     }
+
+    public static IActionResult ToActionResult(this Result result, ControllerBase controller, Func<IActionResult>? onSuccess = null)
+    {
+        if (result.IsSuccess)
+        {
+            return onSuccess != null ? onSuccess() : controller.Ok();
+        }
+
+        return result.Error.Type switch
+        {
+            ErrorType.NotFound => controller.NotFound(new { error = result.Error.Message, code = result.Error.Code }),
+            ErrorType.Validation => controller.BadRequest(new { error = result.Error.Message, code = result.Error.Code }),
+            ErrorType.Conflict => controller.Conflict(new { error = result.Error.Message, code = result.Error.Code }),
+            _ => controller.StatusCode(StatusCodes.Status500InternalServerError, new { error = result.Error.Message, code = result.Error.Code })
+        };
+    }
 }

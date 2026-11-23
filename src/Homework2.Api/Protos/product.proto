@@ -5,6 +5,7 @@ option csharp_namespace = "Homework2.Presentation.Protos";
 package product;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 service ProductProtoService {
@@ -25,6 +26,13 @@ service ProductProtoService {
   rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {
     option (google.api.http) = {
       get: "/v1/products"
+    };
+  }
+
+  rpc UpdateProduct (UpdateProductRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/v1/products/{id}"
+      body: "*"
     };
   }
 }
@@ -59,6 +67,15 @@ message GetProductsRequest {
   optional string storage_id = 3;
   int32 page_number = 4;
   int32 page_size = 5;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string title = 2;
+  double price = 3;
+  int32 weight = 4;
+  ProductTypeProto type = 5;
+  string storage_id = 6;
 }
 
 message ProductResponse {

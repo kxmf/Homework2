@@ -1,6 +1,7 @@
 using Homework2.Application.UseCases.Products.CreateProducts;
 using Homework2.Application.UseCases.Products.GetProductById;
 using Homework2.Application.UseCases.Products.GetProducts;
+using Homework2.Application.UseCases.Products.UpdateProduct;
 using Homework2.Application.UseCases.Storages.CreateStorage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IGetProductByIdUseCase, GetProductByIdUseCase>();
         services.AddScoped<IGetProductsUseCase, GetProductsUseCase>();
         services.AddScoped<ICreateStorageUseCase, CreateStorageUseCase>();
+        services.AddScoped<IUpdateProductUseCase, UpdateProductUseCase>();
 
         return services;
     }
